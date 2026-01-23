@@ -1,0 +1,11 @@
+# Discord bridge settings
+token: ""
+guild-id: ""
+status-channel-id: ""
+shutdown-channel-id: ""
+shutdown-message: "Server is shutting down, see you soon!"
+set-presence: true
+presence-format: "Players {online}/{max}"
+max-players: 0
+language: "en"
+announcement-role-id: ""
