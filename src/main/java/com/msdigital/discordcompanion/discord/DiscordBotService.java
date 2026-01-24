@@ -35,6 +35,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.jetbrains.annotations.NotNull;
@@ -173,38 +174,47 @@ public final class DiscordBotService implements AutoCloseable {
     }
 
     public void updatePresence(int onlinePlayers, int maxPlayers) {
-        if (!configuration.setPresence()) {
-            return;
-        }
+        DiscordMessages messages = resolveMessages();
         JDA instance = jda;
         if (instance == null) {
             return;
         }
-        String presenceText = formatPresenceDescription(
-            configuration,
-            onlinePlayers,
-            maxPlayers
-        );
-        instance
-            .getPresence()
-            .setActivity(Activity.playing(presenceText));
+        if (configuration.setPresence()) {
+            String presenceText = formatPresenceDescription(
+                messages,
+                onlinePlayers,
+                maxPlayers
+            );
+            instance
+                .getPresence()
+                .setActivity(Activity.playing(presenceText));
+        } else {
+            instance
+                .getPresence()
+                .setActivity(Activity.playing("Hytale"));
+        }
         int resolvedMax = maxPlayers;
         if (resolvedMax <= 0) {
             resolvedMax = configuration.maxPlayers();
         }
-        refreshStatusEmbed(
-            onlinePlayers,
-            resolvedMax,
-            true,
-            resolveMessages()
-        );
+        if (configuration.enableStatusEmbed()) {
+            refreshStatusEmbed(
+                onlinePlayers,
+                resolvedMax,
+                true,
+                messages
+            );
+        } else {
+            removeStatusEmbedIfPresent();
+        }
     }
 
-    public void sendShutdownNotice(String message) {
+    public void sendShutdownNotice() {
         refreshStatusEmbed(
             0,
             configuration.maxPlayers(),
             false,
+            true,
             resolveMessages()
         );
     }
@@ -215,7 +225,17 @@ public final class DiscordBotService implements AutoCloseable {
         boolean online,
         DiscordMessages messages
     ) {
-        if (!configuration.hasStatusChannel()) {
+        refreshStatusEmbed(onlinePlayers, maxPlayers, online, false, messages);
+    }
+
+    private void refreshStatusEmbed(
+        int onlinePlayers,
+        int maxPlayers,
+        boolean online,
+        boolean waitForCompletion,
+        DiscordMessages messages
+    ) {
+        if (!configuration.hasStatusChannel() || !configuration.enableStatusEmbed()) {
             return;
         }
         JDA instance = jda;
@@ -246,37 +266,42 @@ public final class DiscordBotService implements AutoCloseable {
             embedTitle()
         );
         Long messageId = statusMessageId;
+        RestAction<Message> action;
 
         if (messageId != null) {
-            channel
-                .editMessageEmbedsById(messageId, embed)
-                .queue(
-                    message -> setStatusMessageId(message.getIdLong()),
-                    failure -> {
-                        logger
-                            .atWarning()
-                            .log(
-                                "Unable to update Discord status embed: %s",
-                                failure.getMessage()
-                            );
-                        clearStatusMessageId();
-                    }
-                );
+            action = channel.editMessageEmbedsById(messageId, embed);
         } else {
-        channel
-            .sendMessageEmbeds(embed)
-            .queue(
-                message -> setStatusMessageId(message.getIdLong()),
-                failure -> {
-                    logger
-                        .atWarning()
-                            .log(
-                                "Unable to post Discord status embed: %s",
-                                failure.getMessage()
-                            );
-                    }
-                );
+            action = channel.sendMessageEmbeds(embed);
         }
+
+        if (waitForCompletion) {
+            try {
+                Message message = action.complete();
+                setStatusMessageId(message.getIdLong());
+            } catch (RuntimeException failure) {
+                logger
+                    .atWarning()
+                    .log(
+                        "Unable to update Discord status embed: %s",
+                        failure.getMessage()
+                    );
+                clearStatusMessageId();
+            }
+            return;
+        }
+
+        action.queue(
+            message -> setStatusMessageId(message.getIdLong()),
+            failure -> {
+                logger
+                    .atWarning()
+                    .log(
+                        "Unable to update Discord status embed: %s",
+                        failure.getMessage()
+                    );
+                clearStatusMessageId();
+            }
+        );
     }
 
     private String embedTitle() {
@@ -358,6 +383,37 @@ public final class DiscordBotService implements AutoCloseable {
         }
     }
 
+    private void removeStatusEmbedIfPresent() {
+        if (statusMessageId == null || !configuration.hasStatusChannel()) {
+            return;
+        }
+        JDA instance = jda;
+        if (instance == null) {
+            clearStatusMessageId();
+            return;
+        }
+        TextChannel channel =
+            instance.getTextChannelById(configuration.statusChannelId());
+        if (channel == null) {
+            clearStatusMessageId();
+            return;
+        }
+        channel
+            .deleteMessageById(statusMessageId)
+            .queue(
+                ignored -> clearStatusMessageId(),
+                failure -> {
+                    logger
+                        .atWarning()
+                        .log(
+                            "Unable to delete Discord status embed: %s",
+                            failure.getMessage()
+                        );
+                    clearStatusMessageId();
+                }
+            );
+    }
+
     private void setStatusMessageId(Long id) {
         if (id == null) {
             clearStatusMessageId();
@@ -400,16 +456,16 @@ public final class DiscordBotService implements AutoCloseable {
         return localizationService.getMessages(configuration.effectiveLanguage());
     }
 
-    private static String formatPresenceDescription(
-        DiscordConfig config,
+    private String formatPresenceDescription(
+        DiscordMessages messages,
         int onlinePlayers,
         int maxPlayers
     ) {
         int resolvedMax = maxPlayers;
         if (resolvedMax <= 0) {
-            resolvedMax = config.maxPlayers();
+            resolvedMax = configuration.maxPlayers();
         }
-        String template = config.presenceFormat();
+        String template = messages.presenceFormat();
         return template
             .replace("{online}", String.valueOf(onlinePlayers))
             .replace("{max}", String.valueOf(resolvedMax));
@@ -574,6 +630,13 @@ public final class DiscordBotService implements AutoCloseable {
         }
 
         private void handleAnnouncement(SlashCommandInteractionEvent event) {
+            if (!config.enableAnnouncements()) {
+                event
+                    .reply("Announcements are disabled on this server.")
+                    .setEphemeral(true)
+                    .queue();
+                return;
+            }
             if (!isAuthorized(event.getMember())) {
                 event
                     .reply(

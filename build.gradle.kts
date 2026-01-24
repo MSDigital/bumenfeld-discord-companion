@@ -1,4 +1,3 @@
-import groovy.json.JsonOutput
 import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.bundling.Zip
@@ -62,6 +61,7 @@ dependencies {
     implementation(libs.sqlite.jdbc)
     implementation(libs.slf4j.api)
     implementation(libs.snakeyaml)
+    implementation(libs.okhttp)
     implementation(libs.jda) {
         exclude(group = "club.minnced", module = "opus-java")
         exclude(module = "tink")
@@ -127,8 +127,8 @@ tasks.withType<Jar> {
     }
 }
 
-val fatJar = tasks.register<Jar>("fatJar") {
-    archiveClassifier.set("fat")
+val pluginJar = tasks.register<Jar>("pluginJar") {
+    archiveClassifier.set("")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
 
@@ -151,17 +151,17 @@ val fatJar = tasks.register<Jar>("fatJar") {
 }
 
 tasks.named("build") {
-    dependsOn(fatJar)
+    dependsOn(pluginJar)
 }
 
 val releaseZipOutput = layout.buildDirectory.dir("release")
 val releaseZip = tasks.register<Zip>("releaseZip") {
-    dependsOn(fatJar)
+    dependsOn(pluginJar)
     archiveBaseName.set("monarch-hytale-discord-companion")
     archiveVersion.set(version.toString())
     destinationDirectory.set(releaseZipOutput)
 
-    from(fatJar) {
+    from(pluginJar) {
         into("lib")
     }
     from("README.md")
@@ -173,9 +173,8 @@ tasks.register("release") {
 }
 
 tasks.named("assemble") {
-    dependsOn(fatJar)
+    dependsOn(pluginJar)
 }
-
 tasks.named("jar") {
     enabled = false
 }
@@ -187,7 +186,7 @@ publishing {
 
     publications {
         create<MavenPublication>("maven") {
-            artifact(fatJar) {
+            artifact(pluginJar) {
                 classifier = null
             }
         }

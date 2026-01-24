@@ -10,6 +10,7 @@ import com.msdigital.discordcompanion.localization.LocalizationService;
 import com.msdigital.discordcompanion.util.ReflectionUtil;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.event.EventPriority;
+import com.hypixel.hytale.server.core.event.events.PrepareUniverseEvent;
 import com.hypixel.hytale.server.core.event.events.ShutdownEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerSetupConnectEvent;
@@ -40,6 +41,8 @@ public final class DiscordCompanionPlugin extends JavaPlugin {
     private final PlayerLifecycleListener playerLifecycleListener = new PlayerLifecycleListener();
     private final ShutdownListener shutdownListener = new ShutdownListener();
     private final AtomicBoolean shutdownNotified = new AtomicBoolean(false);
+        private final ServerLifecycleListener serverLifecycleListener =
+            new ServerLifecycleListener();
 
     private volatile DiscordConfig discordConfig = DiscordConfig.defaults();
 
@@ -120,7 +123,7 @@ public final class DiscordCompanionPlugin extends JavaPlugin {
 
         playerLifecycleListener.register();
         shutdownListener.register();
-        refreshPresence();
+        serverLifecycleListener.register();
     }
 
     private void refreshPresence() {
@@ -135,7 +138,7 @@ public final class DiscordCompanionPlugin extends JavaPlugin {
         }
 
         try {
-            discordBotService.sendShutdownNotice(discordConfig.shutdownMessage());
+            discordBotService.sendShutdownNotice();
         } catch (RuntimeException ex) {
             LOGGER
                 .atWarning()
@@ -166,11 +169,17 @@ public final class DiscordCompanionPlugin extends JavaPlugin {
 
         void onPlayerSetupConnect(PlayerSetupConnectEvent event) {
             UUID playerUuid = event.getUuid();
+            if (!discordConfig.enableWhitelist()) {
+                if (onlinePlayers.add(playerUuid)) {
+                    refreshPresence();
+                }
+                return;
+            }
             if (!whitelistProvider.getList().contains(playerUuid)) {
-            String disconnectMessage = buildWhitelistInstructions(playerUuid);
-            PacketHandler packetHandler = event.getPacketHandler();
-            packetHandler.disconnect(disconnectMessage);
-            return;
+                String disconnectMessage = buildWhitelistInstructions(playerUuid);
+                PacketHandler packetHandler = event.getPacketHandler();
+                packetHandler.disconnect(disconnectMessage);
+                return;
             }
 
             if (onlinePlayers.add(playerUuid)) {
@@ -224,6 +233,21 @@ public final class DiscordCompanionPlugin extends JavaPlugin {
 
         void onShutdown(ShutdownEvent event) {
             notifyShutdown();
+        }
+    }
+
+    private final class ServerLifecycleListener {
+
+        void register() {
+            getEventRegistry()
+                .register(
+                    EventPriority.LAST,
+                    PrepareUniverseEvent.class,
+                    this::onUniversePrepared
+                );
+        }
+        void onUniversePrepared(PrepareUniverseEvent event) {
+            refreshPresence();
         }
     }
 }

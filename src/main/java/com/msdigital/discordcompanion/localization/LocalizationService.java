@@ -19,10 +19,13 @@ public final class LocalizationService {
 
     private static final String LOCALIZATION_DIR = "localization";
     private static final String DEFAULT_LANGUAGE = "en";
+    private static final String DEFAULT_PRESENCE_FORMAT =
+        "Players {online}/{max}";
     private static final String DEFAULT_JSON = """
         {
           "online-description": "Server is online",
-          "offline-description": "Server has shut down"
+          "offline-description": "Server has shut down",
+          "presence-format": "Players {online}/{max}"
         }
         """;
     private static final Pattern ENTRY_PATTERN =
@@ -69,7 +72,8 @@ public final class LocalizationService {
             Map<String, String> entries = parseJson(content);
             return new DiscordMessages(
                 entries.getOrDefault("online-description", ""),
-                entries.getOrDefault("offline-description", "")
+                entries.getOrDefault("offline-description", ""),
+                entries.getOrDefault("presence-format", DEFAULT_PRESENCE_FORMAT)
             );
         } catch (IOException | IllegalArgumentException exception) {
             logger

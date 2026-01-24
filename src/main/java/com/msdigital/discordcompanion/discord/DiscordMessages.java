@@ -6,10 +6,16 @@ public final class DiscordMessages {
 
     private final String onlineDescription;
     private final String offlineDescription;
+    private final String presenceFormat;
 
-    public DiscordMessages(String onlineDescription, String offlineDescription) {
+    public DiscordMessages(
+        String onlineDescription,
+        String offlineDescription,
+        String presenceFormat
+    ) {
         this.onlineDescription = normalize(onlineDescription);
         this.offlineDescription = normalize(offlineDescription);
+        this.presenceFormat = normalize(presenceFormat);
     }
 
     public String onlineDescription() {
@@ -20,6 +26,10 @@ public final class DiscordMessages {
         return offlineDescription;
     }
 
+    public String presenceFormat() {
+        return presenceFormat;
+    }
+
     private static String normalize(String value) {
         if (value == null) {
             return "";
@@ -28,6 +38,10 @@ public final class DiscordMessages {
     }
 
     public static DiscordMessages defaults() {
-        return new DiscordMessages("Server is online", "Server has shut down");
+        return new DiscordMessages(
+            "Server is online",
+            "Server has shut down",
+            "Players {online}/{max}"
+        );
     }
 }

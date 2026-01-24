@@ -26,12 +26,13 @@ public final class DiscordConfigLoader {
         token: ""
         guild-id: ""
         status-channel-id: ""
-        shutdown-message: "Server is shutting down, see you soon!"
         set-presence: true
-        presence-format: "Players {online}/{max}"
         max-players: 0
         language: "en"
         announcement-role-id: ""
+        enable-status-embed: true
+        enable-whitelist: true
+        enable-announcements: true
         """;
 
     private DiscordConfigLoader() {
@@ -255,29 +256,41 @@ public final class DiscordConfigLoader {
             readOptionalBoolean(rawConfig, "set-presence");
         boolean setPresence =
             setPresenceValue == null ? true : setPresenceValue;
-        String presenceFormat =
-            readOptionalString(rawConfig, "presence-format");
         Integer maxPlayersValue =
             readOptionalInteger(rawConfig, "max-players");
         int maxPlayers = maxPlayersValue == null ? 0 : maxPlayersValue;
         String statusChannelId =
             readOptionalString(rawConfig, "status-channel-id");
-        String shutdownMessage =
-            readOptionalString(rawConfig, "shutdown-message");
         String language = readOptionalString(rawConfig, "language");
         String announcementRoleId =
             readOptionalString(rawConfig, "announcement-role-id");
+        Boolean enableStatusEmbedValue =
+            readOptionalBoolean(rawConfig, "enable-status-embed");
+        Boolean enableWhitelistValue =
+            readOptionalBoolean(rawConfig, "enable-whitelist");
+        Boolean enableAnnouncementsValue =
+            readOptionalBoolean(rawConfig, "enable-announcements");
+
+        boolean enableStatusEmbed =
+            enableStatusEmbedValue == null ? true : enableStatusEmbedValue;
+        boolean enableWhitelist =
+            enableWhitelistValue == null ? true : enableWhitelistValue;
+        boolean enableAnnouncements =
+            enableAnnouncementsValue == null
+                ? true
+                : enableAnnouncementsValue;
 
         return new DiscordConfig(
             token,
             guildId,
             setPresence,
-            presenceFormat,
             maxPlayers,
-            shutdownMessage,
             statusChannelId,
             language,
-            announcementRoleId
+            announcementRoleId,
+            enableStatusEmbed,
+            enableWhitelist,
+            enableAnnouncements
         );
     }
 }
