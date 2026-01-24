@@ -31,7 +31,7 @@
 
 ### Deploying to Hytale
 1. Copy the JAR into `/mods/` of the Hytale server you wish to bridge.
-2. Start the server once to have the plugin create `mods/com.msdigital_Bumenfeld Discord Companion/discord.yml` and the localization folder.
+2. Start the server once to have the plugin create `mods/com.Bumenfeld_DiscordCompanion/discord.yml` and the localization folder.
 3. Edit `discord.yml` with the configuration described below and restart the server so the settings are reloaded.
 
 ### Discord Bot Setup
@@ -63,7 +63,7 @@ Refer to `discord.yml.example` for the full schema. After editing the file, rest
 
 ## 3. Localization Contribution
 
-Localization files live in the `localization/` folder inside the plugin data directory (`mods/com.msdigital_Bumenfeld Discord Companion/localization/`). Each file is a JSON object keyed by locale code (e.g., `en.json`, `de.json`). The default values are generated on first run and include:
+Localization files live in the `localization/` folder inside the plugin data directory (`mods/com.Bumenfeld_DiscordCompanion/localization/`). Each file is a JSON object keyed by locale code (e.g., `en.json`, `de.json`). The default values are generated on first run and include:
 ```json
 {
   "language": "en",

@@ -12,7 +12,7 @@ plugins {
     `maven-publish`
 }
 
-group = "com.msdigital"
+group = "com.Bumenfeld"
 val basePluginVersion = project.findProperty("plugin_version")?.toString()?.takeIf { it.isNotBlank() }
     ?: "1.0.0"
 

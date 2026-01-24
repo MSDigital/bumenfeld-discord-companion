@@ -26,7 +26,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public final class DiscordCompanionPlugin extends JavaPlugin {
+public final class DiscordCompanion extends JavaPlugin {
 
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
@@ -46,7 +46,7 @@ public final class DiscordCompanionPlugin extends JavaPlugin {
 
     private volatile DiscordConfig discordConfig = DiscordConfig.defaults();
 
-    public DiscordCompanionPlugin(JavaPluginInit init) {
+    public DiscordCompanion(JavaPluginInit init) {
         super(init);
         LOGGER
             .atInfo()
