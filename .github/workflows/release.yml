@@ -31,6 +31,9 @@ jobs:
       - name: Ensure Gradle wrapper executable
         run: chmod +x gradlew
 
+      - name: Reset to tag commit
+        run: git reset --hard ${{ github.sha }}
+
       - name: Build release with Gradle
         run: ./gradlew --no-daemon clean release
         env:
