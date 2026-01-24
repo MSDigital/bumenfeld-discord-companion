@@ -1,4 +1,4 @@
-package com.msdigital.discordcompanion.database;
+package com.bumenfeld.database;
 
 import com.hypixel.hytale.logger.HytaleLogger;
 import java.io.IOException;

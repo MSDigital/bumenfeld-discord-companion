@@ -1,4 +1,4 @@
-package com.msdigital.discordcompanion.discord;
+package com.bumenfeld.discord;
 
 import com.hypixel.hytale.logger.HytaleLogger;
 import org.yaml.snakeyaml.Yaml;

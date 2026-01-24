@@ -1,11 +1,11 @@
-package com.msdigital.discordcompanion.discord;
+package com.bumenfeld.discord;
 
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.HytaleServerConfig;
-import com.msdigital.discordcompanion.announcement.GameAnnouncementService;
-import com.msdigital.discordcompanion.database.WhitelistCodeService;
-import com.msdigital.discordcompanion.database.WhitelistCodeService.ValidateResult;
-import com.msdigital.discordcompanion.localization.LocalizationService;
+import com.bumenfeld.announcement.GameAnnouncementService;
+import com.bumenfeld.database.WhitelistCodeService;
+import com.bumenfeld.database.WhitelistCodeService.ValidateResult;
+import com.bumenfeld.localization.LocalizationService;
 import java.awt.Color;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

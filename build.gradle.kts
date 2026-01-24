@@ -48,11 +48,12 @@ fun resolveGitVersion(): String? {
     }
 
     val baseTag = segments[0].removePrefix("v")
-    val commitCount = segments[1]
-    return if (commitCount == "0") {
-        if (dirty) "$baseTag-SNAPSHOT-dirty" else baseTag
+    val commitCount = segments[1].toIntOrNull() ?: 0
+    return if (commitCount == 0 && !dirty) {
+        baseTag
     } else {
-        "$baseTag-SNAPSHOT-$commitCount${if (dirty) "-dirty" else ""}"
+        val suffix = if (commitCount > 0) "-$commitCount" else ""
+        "$baseTag-dev$suffix"
     }
 }
 
@@ -70,7 +71,10 @@ val gitCommitCount = runCatching {
         .trim()
 }.getOrNull()?.toIntOrNull() ?: 0
 
-val computedVersion = resolveGitVersion() ?: basePluginVersion
+val outputVersion = project.findProperty("localVersion")?.toString()?.takeIf { it.isNotBlank() }
+    ?: resolveGitVersion()
+
+val computedVersion = outputVersion ?: basePluginVersion
 version = computedVersion
 
 val javaVersion = 25
@@ -195,7 +199,7 @@ tasks.named("build") {
 val releaseZipOutput = layout.buildDirectory.dir("release")
 val releaseZip = tasks.register<Zip>("releaseZip") {
     dependsOn(pluginJar)
-    archiveBaseName.set("monarch-hytale-discord-companion")
+    archiveBaseName.set("bumenfeld-discord-companion")
     archiveVersion.set(version.toString())
     destinationDirectory.set(releaseZipOutput)
 

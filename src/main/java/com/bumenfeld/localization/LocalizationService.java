@@ -1,7 +1,7 @@
-package com.msdigital.discordcompanion.localization;
+package com.bumenfeld.localization;
 
 import com.hypixel.hytale.logger.HytaleLogger;
-import com.msdigital.discordcompanion.discord.DiscordMessages;
+import com.bumenfeld.discord.DiscordMessages;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

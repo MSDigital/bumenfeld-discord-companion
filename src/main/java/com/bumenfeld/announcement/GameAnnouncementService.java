@@ -1,4 +1,4 @@
-package com.msdigital.discordcompanion.announcement;
+package com.bumenfeld.announcement;
 
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.protocol.SoundCategory;

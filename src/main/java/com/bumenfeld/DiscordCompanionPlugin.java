@@ -1,13 +1,13 @@
-package com.msdigital.discordcompanion;
+package com.bumenfeld;
 
-import com.msdigital.discordcompanion.database.DatabaseManager;
-import com.msdigital.discordcompanion.database.WhitelistCodeService;
-import com.msdigital.discordcompanion.announcement.GameAnnouncementService;
-import com.msdigital.discordcompanion.discord.DiscordBotService;
-import com.msdigital.discordcompanion.discord.DiscordConfig;
-import com.msdigital.discordcompanion.discord.DiscordConfigLoader;
-import com.msdigital.discordcompanion.localization.LocalizationService;
-import com.msdigital.discordcompanion.util.ReflectionUtil;
+import com.bumenfeld.database.DatabaseManager;
+import com.bumenfeld.database.WhitelistCodeService;
+import com.bumenfeld.announcement.GameAnnouncementService;
+import com.bumenfeld.discord.DiscordBotService;
+import com.bumenfeld.discord.DiscordConfig;
+import com.bumenfeld.discord.DiscordConfigLoader;
+import com.bumenfeld.localization.LocalizationService;
+import com.bumenfeld.util.ReflectionUtil;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.event.EventPriority;
 import com.hypixel.hytale.server.core.event.events.BootEvent;

@@ -1,4 +1,4 @@
-package com.msdigital.discordcompanion.util;
+package com.bumenfeld.util;
 
 import java.lang.reflect.Field;
 

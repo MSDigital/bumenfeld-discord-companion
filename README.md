@@ -1,9 +1,9 @@
-# Monarch Hytale Discord Companion
+# Bumenfeld Discord Companion
 
-[![CI](https://github.com/msdigital/monarch-hytale-discord-companion/actions/workflows/gradle.yml/badge.svg)](https://github.com/msdigital/monarch-hytale-discord-companion/actions/workflows/gradle.yml)
-[![Release](https://github.com/msdigital/monarch-hytale-discord-companion/actions/workflows/release.yml/badge.svg)](https://github.com/msdigital/monarch-hytale-discord-companion/releases)
+[![CI](https://github.com/msdigital/bumenfeld-discord-companion/actions/workflows/gradle.yml/badge.svg)](https://github.com/msdigital/bumenfeld-discord-companion/actions/workflows/gradle.yml)
+[![Release](https://github.com/msdigital/bumenfeld-discord-companion/actions/workflows/release.yml/badge.svg)](https://github.com/msdigital/bumenfeld-discord-companion/releases)
 
-`Monarch Hytale Discord Companion` by **msdigital** synchronizes your Hytale server with Discord and keeps the experience bi-directional: players can join via Discord commands, announcements flow from Discord into the game, and the bot keeps communities informed about status, presence, shutdowns, and whitelist status without manual staff intervention.
+`Bumenfeld Discord Companion` by **msdigital** synchronizes your Hytale server with Discord and keeps the experience bi-directional: players can join via Discord commands, announcements flow from Discord into the game, and the bot keeps communities informed about status, presence, shutdowns, and whitelist status without manual staff intervention.
 
 ## 1. Description & Commands
 
@@ -26,12 +26,12 @@
    ```bash
    ./gradlew clean release
    ```
-   - The release ZIP sits under `build/release/monarch-hytale-discord-companion-<version>.zip`.
-   - The plugin JAR (no `-fat`) is `build/libs/monarch-hytale-discord-companion-<version>.jar` and contains only the dependencies you need.
+   - The release ZIP sits under `build/release/bumenfeld-discord-companion-<version>.zip`.
+   - The plugin JAR (no `-fat`) is `build/libs/bumenfeld-discord-companion-<version>.jar` and contains only the dependencies you need.
 
 ### Deploying to Hytale
 1. Copy the JAR into `/mods/` of the Hytale server you wish to bridge.
-2. Start the server once to have the plugin create `mods/com.msdigital_Monarch Hytale Discord Companion/discord.yml` and the localization folder.
+2. Start the server once to have the plugin create `mods/com.msdigital_Bumenfeld Discord Companion/discord.yml` and the localization folder.
 3. Edit `discord.yml` with the configuration described below and restart the server so the settings are reloaded.
 
 ### Discord Bot Setup
@@ -63,7 +63,7 @@ Refer to `discord.yml.example` for the full schema. After editing the file, rest
 
 ## 3. Localization Contribution
 
-Localization files live in the `localization/` folder inside the plugin data directory (`mods/com.msdigital_Monarch Hytale Discord Companion/localization/`). Each file is a JSON object keyed by locale code (e.g., `en.json`, `de.json`). The default values are generated on first run and include:
+Localization files live in the `localization/` folder inside the plugin data directory (`mods/com.msdigital_Bumenfeld Discord Companion/localization/`). Each file is a JSON object keyed by locale code (e.g., `en.json`, `de.json`). The default values are generated on first run and include:
 ```json
 {
   "language": "en",
@@ -78,7 +78,7 @@ To add a language, drop another `{locale}.json` file with the same keys and poin
 
 1. Clone and build locally:
    ```bash
-   git clone https://github.com/msdigital/monarch-hytale-discord-companion.git
+   git clone https://github.com/msdigital/bumenfeld-discord-companion.git
    ./gradlew clean build
    ```
 2. The repository uses Gradle version catalogs (`gradle/libs.versions.toml`), Kotlin build scripts, and a release workflow under `.github/workflows/` that packages the JAR + README + LICENSE into a ZIP.
@@ -89,7 +89,7 @@ Submit contributions via GitHub pull requests and open issues for feature reques
 
 ## 5. Credits
 
-- **msdigital** – Author, maintainer, and architect of the Monarch Hytale Discord Companion plugin.
+- **msdigital** – Author, maintainer, and architect of the Bumenfeld Discord Companion plugin.
 - **Hytale team** – Provides the server API used by this plugin.
 - **Discord** – The API powering slash commands, embeds, and REST interactions.
 

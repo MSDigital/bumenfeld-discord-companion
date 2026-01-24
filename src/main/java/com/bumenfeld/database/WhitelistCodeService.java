@@ -1,4 +1,4 @@
-package com.msdigital.discordcompanion.database;
+package com.bumenfeld.database;
 
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.server.core.modules.accesscontrol.provider.HytaleWhitelistProvider;
@@ -10,9 +10,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import com.msdigital.discordcompanion.database.DatabaseManager.DatabaseException;
-import com.msdigital.discordcompanion.database.DatabaseManager.WhitelistCode;
-import com.msdigital.discordcompanion.util.ReflectionUtil;
+import com.bumenfeld.database.DatabaseManager.DatabaseException;
+import com.bumenfeld.database.DatabaseManager.WhitelistCode;
+import com.bumenfeld.util.ReflectionUtil;
 
 public final class WhitelistCodeService implements AutoCloseable {
 
