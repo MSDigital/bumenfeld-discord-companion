@@ -127,6 +127,10 @@ tasks.withType<Jar> {
     }
 }
 
+tasks.withType<JavaCompile> {
+    options.compilerArgs.add("-Xlint:deprecation")
+}
+
 val pluginJar = tasks.register<Jar>("pluginJar") {
     archiveClassifier.set("")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE

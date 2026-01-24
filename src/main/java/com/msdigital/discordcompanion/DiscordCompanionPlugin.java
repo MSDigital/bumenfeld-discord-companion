@@ -10,7 +10,7 @@ import com.msdigital.discordcompanion.localization.LocalizationService;
 import com.msdigital.discordcompanion.util.ReflectionUtil;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.event.EventPriority;
-import com.hypixel.hytale.server.core.event.events.PrepareUniverseEvent;
+import com.hypixel.hytale.server.core.event.events.BootEvent;
 import com.hypixel.hytale.server.core.event.events.ShutdownEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerSetupConnectEvent;
@@ -202,7 +202,7 @@ public final class DiscordCompanionPlugin extends JavaPlugin {
                 String code = whitelistCodeService.ensureCode(playerUuid);
                 return "Use Discord to run /whitelist " +
                     code +
-                    "] to whitelist yourself" +
+                    " to whitelist yourself" +
                     guildInstruction +
                     ".";
             } catch (RuntimeException ex) {
@@ -242,11 +242,11 @@ public final class DiscordCompanionPlugin extends JavaPlugin {
             getEventRegistry()
                 .register(
                     EventPriority.LAST,
-                    PrepareUniverseEvent.class,
-                    this::onUniversePrepared
+                    BootEvent.class,
+                    this::onBoot
                 );
         }
-        void onUniversePrepared(PrepareUniverseEvent event) {
+        void onBoot(BootEvent event) {
             refreshPresence();
         }
     }

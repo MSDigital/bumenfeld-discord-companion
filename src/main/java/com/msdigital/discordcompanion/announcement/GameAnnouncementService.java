@@ -61,7 +61,7 @@ public final class GameAnnouncementService {
     }
 
     private void playAnnouncementSound() {
-        int soundIndex = TempAssetIdUtil.getSoundEventIndex(ANNOUNCEMENT_SOUND);
+        int soundIndex = resolveAnnouncementSoundIndex();
         if (soundIndex < 0) {
             logger
                 .atWarning()
@@ -93,5 +93,10 @@ public final class GameAnnouncementService {
                 header,
                 body
             );
+    }
+
+    @SuppressWarnings("removal")
+    private int resolveAnnouncementSoundIndex() {
+        return TempAssetIdUtil.getSoundEventIndex(ANNOUNCEMENT_SOUND);
     }
 }
