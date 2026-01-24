@@ -15,14 +15,47 @@ plugins {
 group = "com.msdigital"
 val basePluginVersion = project.findProperty("plugin_version")?.toString()?.takeIf { it.isNotBlank() }
     ?: "1.0.0"
-fun computeAutoVersion(baseVersion: String, commitCount: Int): String {
-    val parts = baseVersion.split('.').mapNotNull { it.toIntOrNull() }
-    val major = parts.getOrElse(0) { 0 }
-    val minor = parts.getOrElse(1) { 0 }
-    val patch = parts.getOrElse(2) { 0 }
-    val autoPatch = patch + commitCount
-    return "$major.$minor.$autoPatch"
+
+fun resolveGitVersion(): String? {
+    val process = ProcessBuilder(
+        "git",
+        "describe",
+        "--tags",
+        "--match",
+        "v[0-9]*",
+        "--long",
+        "--dirty"
+    )
+        .directory(projectDir)
+        .redirectErrorStream(true)
+        .start()
+
+    val finished = process.waitFor(5, TimeUnit.SECONDS)
+    if (!finished || process.exitValue() != 0) {
+        return null
+    }
+
+    val describe = process.inputStream.bufferedReader().readText().trim()
+    if (describe.isBlank()) {
+        return null
+    }
+
+    val dirty = describe.endsWith("-dirty")
+    val cleanDescribe = if (dirty) describe.removeSuffix("-dirty") else describe
+    val segments = cleanDescribe.split('-')
+    if (segments.size < 3) {
+        return segments.firstOrNull()?.removePrefix("v")
+    }
+
+    val baseTag = segments[0].removePrefix("v")
+    val commitCount = segments[1]
+    return if (commitCount == "0") {
+        if (dirty) "$baseTag-SNAPSHOT-dirty" else baseTag
+    } else {
+        "$baseTag-SNAPSHOT-$commitCount${if (dirty) "-dirty" else ""}"
+    }
 }
+
 val gitCommitCount = runCatching {
     ProcessBuilder("git", "rev-list", "--count", "HEAD")
         .directory(projectDir)
@@ -36,7 +69,8 @@ val gitCommitCount = runCatching {
         .readText()
         .trim()
 }.getOrNull()?.toIntOrNull() ?: 0
-val computedVersion = computeAutoVersion(basePluginVersion, gitCommitCount)
+
+val computedVersion = resolveGitVersion() ?: basePluginVersion
 version = computedVersion
 
 val javaVersion = 25
