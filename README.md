@@ -1,5 +1,8 @@
 # Monarch Hytale Discord Companion
 
+[![CI](https://github.com/msdigital/monarch-hytale-discord-companion/actions/workflows/gradle.yml/badge.svg)](https://github.com/msdigital/monarch-hytale-discord-companion/actions/workflows/gradle.yml)
+[![Release](https://github.com/msdigital/monarch-hytale-discord-companion/actions/workflows/release.yml/badge.svg)](https://github.com/msdigital/monarch-hytale-discord-companion/releases)
+
 `Monarch Hytale Discord Companion` by **msdigital** synchronizes your Hytale server with Discord and keeps the experience bi-directional: players can join via Discord commands, announcements flow from Discord into the game, and the bot keeps communities informed about status, presence, shutdowns, and whitelist status without manual staff intervention.
 
 ## 1. Description & Commands
