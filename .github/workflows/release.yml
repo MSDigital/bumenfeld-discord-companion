@@ -28,7 +28,7 @@ jobs:
           java-version: 25
           cache: gradle
 
-      - name: Make Gradle wrapper executable
+      - name: Ensure Gradle wrapper executable
         run: chmod +x gradlew
 
       - name: Build release with Gradle
