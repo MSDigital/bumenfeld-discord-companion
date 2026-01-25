@@ -27,7 +27,6 @@ public final class DiscordConfigLoader {
         guild-id: ""
         status-channel-id: ""
         set-presence: true
-        max-players: 0
         language: "en"
         announcement-role-id: ""
         enable-status-embed: true

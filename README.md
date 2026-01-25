@@ -53,7 +53,6 @@ guild-id: "<optional guild ID for command registration>"
 status-channel-id: "<channel for presence/embed>"
 announcement-role-id: "<role allowed to run /announcement>"
 set-presence: true
-max-players: 50
 language: en
 enable-status-embed: true
 enable-whitelist: true

@@ -10,6 +10,7 @@ import com.bumenfeld.localization.LocalizationService;
 import com.bumenfeld.util.ReflectionUtil;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.event.EventPriority;
+import com.hypixel.hytale.server.core.HytaleServerConfig;
 import com.hypixel.hytale.server.core.event.events.BootEvent;
 import com.hypixel.hytale.server.core.event.events.ShutdownEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
@@ -128,8 +129,28 @@ public final class DiscordCompanion extends JavaPlugin {
 
     private void refreshPresence() {
         int online = onlinePlayers.size();
-        int max = discordConfig.maxPlayers();
+        int max = resolveMaxPlayers();
         discordBotService.updatePresence(online, max);
+    }
+
+    private int resolveMaxPlayers() {
+        try {
+            HytaleServerConfig serverConfig = HytaleServerConfig.load();
+            if (serverConfig != null) {
+                int maxPlayers = serverConfig.getMaxPlayers();
+                if (maxPlayers > 0) {
+                    return maxPlayers;
+                }
+            }
+        } catch (RuntimeException exception) {
+            LOGGER
+                .atWarning()
+                .log(
+                    "Unable to read server max players: %s",
+                    exception.getMessage()
+                );
+        }
+        return discordConfig.maxPlayers();
     }
 
     private void notifyShutdown() {
