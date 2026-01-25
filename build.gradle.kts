@@ -1,6 +1,5 @@
 import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.tasks.bundling.Jar
-import org.gradle.api.tasks.bundling.Zip
 import java.io.ByteArrayOutputStream
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -21,8 +20,6 @@ fun resolveGitVersion(): String? {
         "git",
         "describe",
         "--tags",
-        "--match",
-        "v[0-9]*",
         "--long",
         "--dirty"
     )
@@ -196,22 +193,8 @@ tasks.named("build") {
     dependsOn(pluginJar)
 }
 
-val releaseZipOutput = layout.buildDirectory.dir("release")
-val releaseZip = tasks.register<Zip>("releaseZip") {
-    dependsOn(pluginJar)
-    archiveBaseName.set("bumenfeld-discord-companion")
-    archiveVersion.set(version.toString())
-    destinationDirectory.set(releaseZipOutput)
-
-    from(pluginJar) {
-        into("lib")
-    }
-    from("README.md")
-    from("LICENSE")
-}
-
 tasks.register("release") {
-    dependsOn(releaseZip)
+    dependsOn(pluginJar)
 }
 
 tasks.named("assemble") {

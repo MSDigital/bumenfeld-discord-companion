@@ -39,16 +39,16 @@ jobs:
         env:
           GRADLE_OPTS: -Dorg.gradle.daemon=false
 
-      - name: Upload ZIP artifact
+      - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-zip
-          path: build/release/*.zip
+          name: release-jar
+          path: build/libs/*.jar
           if-no-files-found: error
 
       - name: Publish release assets
         uses: softprops/action-gh-release@v2
         with:
-          files: build/release/*.zip
+          files: build/libs/*.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
