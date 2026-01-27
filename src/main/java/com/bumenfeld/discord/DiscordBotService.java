@@ -35,6 +35,8 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
@@ -285,7 +287,7 @@ public final class DiscordBotService implements AutoCloseable {
                         "Unable to update Discord status embed: %s",
                         failure.getMessage()
                     );
-                clearStatusMessageId();
+                handleStatusEmbedFailure(failure, channel, embed);
             }
             return;
         }
@@ -299,7 +301,7 @@ public final class DiscordBotService implements AutoCloseable {
                         "Unable to update Discord status embed: %s",
                         failure.getMessage()
                     );
-                clearStatusMessageId();
+                handleStatusEmbedFailure(failure, channel, embed);
             }
         );
     }
@@ -450,6 +452,43 @@ public final class DiscordBotService implements AutoCloseable {
                     exception.getMessage()
                 );
         }
+    }
+
+    private void handleStatusEmbedFailure(
+        Throwable failure,
+        TextChannel channel,
+        MessageEmbed embed
+    ) {
+        if (shouldRecreateStatusEmbed(failure)) {
+            sendNewStatusEmbed(channel, embed);
+        }
+    }
+
+    private boolean shouldRecreateStatusEmbed(Throwable failure) {
+        for (Throwable cause = failure; cause != null; cause = cause.getCause()) {
+            if (cause instanceof ErrorResponseException responseException) {
+                return responseException.getErrorResponse()
+                    == ErrorResponse.UNKNOWN_MESSAGE;
+            }
+        }
+        return false;
+    }
+
+    private void sendNewStatusEmbed(TextChannel channel, MessageEmbed embed) {
+        channel
+            .sendMessageEmbeds(embed)
+            .queue(
+                message -> setStatusMessageId(message.getIdLong()),
+                failure -> {
+                    logger
+                        .atWarning()
+                        .log(
+                            "Unable to recreate Discord status embed: %s",
+                            failure.getMessage()
+                        );
+                    clearStatusMessageId();
+                }
+            );
     }
 
     private DiscordMessages resolveMessages() {
