@@ -93,3 +93,8 @@ Submit contributions via GitHub pull requests and open issues for feature reques
 - **Discord** – The API powering slash commands, embeds, and REST interactions.
 
 Thanks to everyone who tests on real servers and contributes localization updates. Keep the community loop alive!
+
+## 6. License
+
+Licensed under **MSDigital No-Resale License v1.0** (see `LICENSE`).
+**Attribution:** BlackJackV8 (MSDigital) — Official repo: <https://github.com/MSDigital/bumenfeld-discord-companion>
