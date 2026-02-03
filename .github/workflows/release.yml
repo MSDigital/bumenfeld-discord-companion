@@ -46,6 +46,85 @@ jobs:
           path: build/libs/*.jar
           if-no-files-found: error
 
+      - name: Resolve release JAR path
+        shell: bash
+        run: |
+          set -euo pipefail
+          JAR_PATH="$(ls -1 build/libs/*.jar | head -n 1)"
+          echo "CF_FILE_PATH=$JAR_PATH" >> "$GITHUB_ENV"
+
+      - name: Load CurseForge config
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY' >> "$GITHUB_ENV"
+          import json, pathlib
+          cfg = json.loads(pathlib.Path("curseforge.json").read_text(encoding="utf-8"))
+          print(f"CF_PROJECT_ID={cfg['projectId']}")
+          print(f"CF_GAME_ENDPOINT={cfg['gameEndpoint']}")
+          api_base_url = cfg.get("apiBaseUrl") or ("https://" + cfg["gameEndpoint"] + ".curseforge.com")
+          print(f"CF_API_BASE_URL={api_base_url}")
+          print(f"CF_RELEASE_TYPE={cfg.get('releaseType', 'release')}")
+          print(f"CF_CHANGELOG_TYPE={cfg.get('changelogType', 'markdown')}")
+          print("CF_GAME_VERSIONS=" + ",".join(str(v) for v in cfg["gameVersions"]))
+          relations = cfg.get("relations")
+          if relations is not None:
+              print("CF_RELATIONS_JSON=" + json.dumps(relations, separators=(",", ":")))
+          PY
+
+      - name: Upload to CurseForge (Upload API)
+        shell: bash
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CHANGELOG: ${{ github.event.release.body }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, os, pathlib
+          changelog = os.environ.get("CHANGELOG", "")
+          metadata = {
+              "changelog": changelog,
+              "changelogType": os.environ.get("CF_CHANGELOG_TYPE", "markdown"),
+              "gameVersions": [int(v) for v in os.environ["CF_GAME_VERSIONS"].split(",") if v],
+              "releaseType": os.environ.get("CF_RELEASE_TYPE", "release"),
+          }
+          relations_json = os.environ.get("CF_RELATIONS_JSON")
+          if relations_json:
+              metadata["relations"] = json.loads(relations_json)
+          pathlib.Path("build/cf-metadata.json").write_text(json.dumps(metadata, separators=(",", ":")), encoding="utf-8")
+          PY
+          METADATA_JSON="$(cat build/cf-metadata.json)"
+          echo "Metadata JSON: ${METADATA_JSON}"
+          HTTP_CODE="$(curl -sS -L --fail-with-body \
+            -o build/cf-upload-response.json \
+            -D build/cf-upload-headers.txt \
+            -w "%{http_code}" \
+            -X POST "${CF_API_BASE_URL}/api/projects/${CF_PROJECT_ID}/upload-file" \
+            -H "X-Api-Token: $CF_API_TOKEN" \
+            -F "metadata=<build/cf-metadata.json;type=application/json" \
+            -F "file=@${CF_FILE_PATH}")"
+          echo "CurseForge upload HTTP status: $HTTP_CODE"
+          echo "CurseForge upload response headers:"
+          cat build/cf-upload-headers.txt
+          echo "CurseForge upload response:"
+          if [ -s build/cf-upload-response.json ]; then
+            cat build/cf-upload-response.json
+          else
+            echo "(empty response body)"
+          fi
+          python - <<'PY'
+          import json, pathlib, sys
+          text = pathlib.Path("build/cf-upload-response.json").read_text(encoding="utf-8")
+          if not text.strip():
+              print("CurseForge upload returned an empty response body.")
+              sys.exit(1)
+          data = json.loads(text)
+          if "id" not in data:
+              print("CurseForge upload did not return a file id.")
+              sys.exit(1)
+          print(f"CurseForge file id: {data['id']}")
+          PY
+
       - name: Publish release assets
         uses: softprops/action-gh-release@v2
         with:
