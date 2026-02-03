@@ -1,0 +1,8 @@
+{
+  "projectId": "1452216",
+  "gameEndpoint": "hytale",
+  "apiBaseUrl": "https://www.curseforge.com",
+  "gameVersions": [14284],
+  "releaseType": "release",
+  "changelogType": "markdown"
+}
