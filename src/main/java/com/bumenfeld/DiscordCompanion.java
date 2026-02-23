@@ -117,6 +117,7 @@ public final class DiscordCompanion extends JavaPlugin {
 
     @Override
     protected void setup() {
+        ExtractedAssetPackManifestEnsurer.ensure(this, LOGGER);
         whitelistCodeService.initialize();
 
         this.discordConfig = DiscordConfigLoader.load(getDataDirectory(), LOGGER);
@@ -268,6 +269,7 @@ public final class DiscordCompanion extends JavaPlugin {
                 );
         }
         void onBoot(BootEvent event) {
+            ExtractedAssetPackManifestEnsurer.ensure(DiscordCompanion.this, LOGGER);
             refreshPresence();
         }
     }
