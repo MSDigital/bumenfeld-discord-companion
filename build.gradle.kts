@@ -1,6 +1,8 @@
 import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.tasks.bundling.Jar
 import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.net.URL
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -88,6 +90,43 @@ repositories {
     }
 }
 
+val serverVersionProperty = project.findProperty("server_version")?.toString()?.takeIf { it.isNotBlank() }
+val serverVersionResolved = resolveServerVersion(serverVersionProperty)
+val serverVersionManifest = formatManifestServerVersion(serverVersionResolved ?: serverVersionProperty)
+
+fun resolveServerVersion(raw: String?): String? {
+    if (raw == null) {
+        return null
+    }
+    if (raw != "*") {
+        return raw
+    }
+    return fetchLatestServerRelease()
+}
+
+fun fetchLatestServerRelease(): String? {
+    val metadataUrl = "https://maven.hytale.com/release/com/hypixel/hytale/Server/maven-metadata.xml"
+    return try {
+        val xml = URL(metadataUrl).readText()
+        Regex("<release>([^<]+)</release>").find(xml)?.groupValues?.get(1)
+            ?: Regex("<latest>([^<]+)</latest>").find(xml)?.groupValues?.get(1)
+    } catch (ex: IOException) {
+        logger.warn("Unable to fetch Hytale server metadata from $metadataUrl: ${ex.message}")
+        null
+    }
+}
+
+fun formatManifestServerVersion(value: String?): String? {
+    if (value == null) {
+        return null
+    }
+    val trimmed = value.trim()
+    if (trimmed == "*") {
+        return "*"
+    }
+    return trimmed
+}
+
 dependencies {
     compileOnly("com.hypixel.hytale:Server:latest.release")
     compileOnly(libs.jetbrains.annotations)
@@ -115,7 +154,7 @@ tasks.named<ProcessResources>("processResources") {
         "plugin_maven_group" to findProperty("plugin_maven_group"),
         "plugin_name" to findProperty("plugin_name"),
         "plugin_version" to computedVersion,
-        "server_version" to findProperty("server_version"),
+        "server_version" to serverVersionManifest,
         "plugin_description" to findProperty("plugin_description"),
         "plugin_website" to findProperty("plugin_website"),
         "plugin_main_entrypoint" to findProperty("plugin_main_entrypoint"),
