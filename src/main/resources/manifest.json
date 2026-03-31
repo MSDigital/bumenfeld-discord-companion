@@ -19,5 +19,8 @@
     "Id": "${build_id}",
     "Timestamp": "${build_timestamp}",
     "GitRevision": "${git_revision}"
+  },
+  "UpdateChecker": {
+    "CurseForge": "1452216"
   }
 }
