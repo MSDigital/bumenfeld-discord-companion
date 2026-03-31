@@ -10,6 +10,7 @@ import com.bumenfeld.localization.LocalizationService;
 import com.bumenfeld.util.ReflectionUtil;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.event.EventPriority;
+import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.HytaleServerConfig;
 import com.hypixel.hytale.server.core.event.events.BootEvent;
 import com.hypixel.hytale.server.core.event.events.ShutdownEvent;
@@ -200,7 +201,7 @@ public final class DiscordCompanion extends JavaPlugin {
             if (!whitelistProvider.getList().contains(playerUuid)) {
                 String disconnectMessage = buildWhitelistInstructions(playerUuid);
                 PacketHandler packetHandler = event.getPacketHandler();
-                packetHandler.disconnect(disconnectMessage);
+                packetHandler.disconnect(Message.raw(disconnectMessage));
                 return;
             }
 

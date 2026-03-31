@@ -128,7 +128,8 @@ fun formatManifestServerVersion(value: String?): String? {
 }
 
 dependencies {
-    compileOnly("com.hypixel.hytale:Server:latest.release")
+    val dependencyVersion = serverVersionResolved ?: "latest.release"
+    compileOnly("com.hypixel.hytale:Server:$dependencyVersion")
     compileOnly(libs.jetbrains.annotations)
     compileOnly(libs.jspecify)
 
