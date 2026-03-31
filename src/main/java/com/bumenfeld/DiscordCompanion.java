@@ -10,12 +10,12 @@ import com.bumenfeld.localization.LocalizationService;
 import com.bumenfeld.util.ReflectionUtil;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.event.EventPriority;
+import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.HytaleServerConfig;
 import com.hypixel.hytale.server.core.event.events.BootEvent;
 import com.hypixel.hytale.server.core.event.events.ShutdownEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerSetupConnectEvent;
-import com.hypixel.hytale.server.core.io.PacketHandler;
 import com.hypixel.hytale.server.core.modules.accesscontrol.AccessControlModule;
 import com.hypixel.hytale.server.core.modules.accesscontrol.provider.HytaleWhitelistProvider;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
@@ -49,6 +49,7 @@ public final class DiscordCompanion extends JavaPlugin {
 
     public DiscordCompanion(JavaPluginInit init) {
         super(init);
+        ExtractedAssetPackManifestEnsurer.ensure(this, LOGGER);
         LOGGER
             .atInfo()
             .log(
@@ -177,7 +178,7 @@ public final class DiscordCompanion extends JavaPlugin {
         void register() {
             getEventRegistry()
                 .register(
-                    EventPriority.FIRST,
+                    EventPriority.LAST,
                     PlayerSetupConnectEvent.class,
                     this::onPlayerSetupConnect
                 );
@@ -199,8 +200,15 @@ public final class DiscordCompanion extends JavaPlugin {
             }
             if (!whitelistProvider.getList().contains(playerUuid)) {
                 String disconnectMessage = buildWhitelistInstructions(playerUuid);
-                PacketHandler packetHandler = event.getPacketHandler();
-                packetHandler.disconnect(disconnectMessage);
+                LOGGER
+                    .atInfo()
+                    .log(
+                        "Rejecting non-whitelisted player %s: %s",
+                        playerUuid,
+                        disconnectMessage
+                    );
+                event.setCancelled(true);
+                event.setReason(Message.raw(disconnectMessage));
                 return;
             }
 

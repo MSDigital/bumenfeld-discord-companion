@@ -15,6 +15,8 @@ final class ExtractedAssetPackManifestEnsurer {
     private static final Pattern GROUP_PATTERN = Pattern.compile("\"Group\"\\s*:\\s*\"([^\"]*)\"");
     private static final Pattern NAME_PATTERN = Pattern.compile("\"Name\"\\s*:\\s*\"([^\"]*)\"");
     private static final Pattern INCLUDES_ASSET_PACK_PATTERN = Pattern.compile("\"IncludesAssetPack\"\\s*:\\s*(true|false)");
+    private static final Pattern SERVER_VERSION_PATTERN = Pattern.compile("\"ServerVersion\"\\s*:\\s*\"([^\"]*)\"");
+    private static final Pattern BUILD_ID_PATTERN = Pattern.compile("\"Id\"\\s*:\\s*\"([^\"]*)\"");
 
     private ExtractedAssetPackManifestEnsurer() {
     }
@@ -32,16 +34,18 @@ final class ExtractedAssetPackManifestEnsurer {
             String pluginGroup = pluginManifest != null ? pluginManifest.getGroup() : "";
             String pluginName = pluginManifest != null ? pluginManifest.getName() : plugin.getName();
             String extractedPackName = extractedPackName(pluginName);
-            if (!shouldWriteExtractedManifest(extractedManifest, pluginGroup, pluginName, extractedPackName)) {
-                return;
-            }
 
             try (InputStream stream = plugin.getClass().getClassLoader().getResourceAsStream("manifest.json")) {
                 if (stream == null) {
                     logger.atWarning().log("Missing bundled resource: manifest.json");
                     return;
                 }
-                String json = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+                String bundledJson = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+                if (!shouldWriteExtractedManifest(extractedManifest, pluginGroup, pluginName, extractedPackName, bundledJson)) {
+                    return;
+                }
+
+                String json = bundledJson;
                 json = replaceField(NAME_PATTERN, json, extractedPackName);
                 json = replaceField(INCLUDES_ASSET_PACK_PATTERN, json, "false");
                 Files.writeString(extractedManifest, json, StandardCharsets.UTF_8);
@@ -53,17 +57,35 @@ final class ExtractedAssetPackManifestEnsurer {
         }
     }
 
-    private static boolean shouldWriteExtractedManifest(Path path, String pluginGroup, String pluginName, String extractedPackName) {
+    private static boolean shouldWriteExtractedManifest(
+        Path path,
+        String pluginGroup,
+        String pluginName,
+        String extractedPackName,
+        String bundledManifestText
+    ) {
         if (!Files.exists(path)) {
             return true;
         }
 
         try {
-            String text = Files.readString(path, StandardCharsets.UTF_8);
-            String group = capture(GROUP_PATTERN, text);
-            String name = capture(NAME_PATTERN, text);
+            String extractedManifestText = Files.readString(path, StandardCharsets.UTF_8);
+            String group = capture(GROUP_PATTERN, extractedManifestText);
+            String name = capture(NAME_PATTERN, extractedManifestText);
             if (pluginGroup.equals(group) && extractedPackName.equals(name)) {
-                return false;
+                String includesAssetPack = capture(INCLUDES_ASSET_PACK_PATTERN, extractedManifestText);
+                if (!"false".equals(includesAssetPack)) {
+                    return true;
+                }
+
+                String extractedBuildId = capture(BUILD_ID_PATTERN, extractedManifestText);
+                String bundledBuildId = capture(BUILD_ID_PATTERN, bundledManifestText);
+                String extractedServerVersion = capture(SERVER_VERSION_PATTERN, extractedManifestText);
+                String bundledServerVersion = capture(SERVER_VERSION_PATTERN, bundledManifestText);
+                boolean buildIdChanged = !bundledBuildId.isBlank() && !bundledBuildId.equals(extractedBuildId);
+                boolean serverVersionChanged = !bundledServerVersion.isBlank() && !bundledServerVersion.equals(extractedServerVersion);
+
+                return buildIdChanged || serverVersionChanged;
             }
             if (pluginGroup.equals(group) && pluginName.equals(name)) {
                 return true;
